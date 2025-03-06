@@ -113,7 +113,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Improved UI Layout
-st.title("Automated Meal Form")
+st.markdown('<h1 class="title-center">Automated Meal Form</h1>', unsafe_allow_html=True)
 st.markdown("🍴 Automatically fill your daily meal forms!")
 
 with st.container():
