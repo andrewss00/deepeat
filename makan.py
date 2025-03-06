@@ -113,8 +113,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Improved UI Layout
-st.title("🍴 Automated Meal Form Filler")
-st.markdown("Automatically fill your daily meal forms with this tool!")
+st.title("🍴 Automated Meal Form")
+st.markdown("Automatically fill your daily meal forms!")
 
 with st.container():
     st.subheader("📅 Date Range")
