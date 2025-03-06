@@ -59,7 +59,7 @@ st.markdown("""
     /* Button styling */
     [data-testid="stButton"] button {
         background: var(--blue) !important;
-        color: white !important;
+        color: var(--primary-text-color) !important; /* Ensure text color is adaptable */
         border-radius: 8px !important;
         padding: 12px 24px !important;
         transition: all 0.2s ease;
