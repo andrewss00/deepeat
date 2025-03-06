@@ -109,10 +109,15 @@ st.markdown("""
         margin: 2rem 0 !important;
         border-color: var(--border-color) !important;
     }
+    
+    /* Center Title */
+    .title-center {
+        text-align: center !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# Improved UI Layout
+# Improved UI Layout with centered title
 st.markdown('<h1 class="title-center">Automated Meal Form</h1>', unsafe_allow_html=True)
 st.markdown("🍴 Automatically fill your daily meal forms!")
 
