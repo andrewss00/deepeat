@@ -71,9 +71,9 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
     }
     
-    /* Card styling for container */
-    .card-container {
-        background: var(--primary-background-color) !important;
+    /* Container styling */
+    [data-testid="stHorizontalBlock"] {
+        background: var(--primary-background-color);
         border-radius: 12px;
         padding: 2rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -112,30 +112,25 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Improved UI Layout with Card Style
+# Improved UI Layout
 st.title("🍴 Automated Meal Form Filler")
 st.markdown("Automatically fill your daily meal forms with this tool!")
 
 with st.container():
-    # Create a card-like container
-    with st.beta_expander("Fill in the details for Date Range and Employee Information", expanded=True):
-        st.markdown('<div class="card-container">', unsafe_allow_html=True)
+    st.subheader("📅 Date Range")
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("Start Date")
+    with col2:
+        end_date = st.date_input("End Date")
 
-        st.subheader("📅 Date Range")
-        col1, col2 = st.columns(2)
-        with col1:
-            start_date = st.date_input("Start Date")
-        with col2:
-            end_date = st.date_input("End Date")
-
-        st.subheader("👤 Employee Information")
-        emp_col1, emp_col2 = st.columns(2)
-        with emp_col1:
-            employee_id = st.text_input("Employee ID")
-        with emp_col2:
-            full_name = st.text_input("Full Name")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+with st.container():
+    st.subheader("👤 Employee Information")
+    emp_col1, emp_col2 = st.columns(2)
+    with emp_col1:
+        employee_id = st.text_input("Employee ID")
+    with emp_col2:
+        full_name = st.text_input("Full Name")
 
 st.divider()
 
