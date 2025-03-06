@@ -110,16 +110,16 @@ st.markdown("""
         border-color: var(--border-color) !important;
     }
     
-    /* Center Title */
-    .title-center {
+    /* Center Title and Description */
+    .center-text {
         text-align: center !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Improved UI Layout with centered title
-st.markdown('<h1 class="title-center">Automated Meal Form</h1>', unsafe_allow_html=True)
-st.markdown("🍴 Automatically fill your daily meal forms!")
+# Improved UI Layout with centered title and description
+st.markdown('<h1 class="center-text">Automated Meal Form</h1>', unsafe_allow_html=True)
+st.markdown('<p class="center-text">🍴 Automatically fill your daily meal forms!</p>', unsafe_allow_html=True)
 
 with st.container():
     st.subheader("📅 Date Range")
