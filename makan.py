@@ -30,88 +30,106 @@ st.markdown("""
     
     * {
         font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
     
-    /* Main background */
+    /* Dark theme base */
     [data-testid="stAppViewContainer"] {
-        background: #f8f9fa;
+        background: #0a0a0a !important;
+        color: #ffffff !important;
     }
-    
-    /* Sidebar background */
-    [data-testid="stSidebar"] {
-        background: #ffffff;
+
+    /* Unified card styling */
+    .dark-card {
+        background: #1a1a1a !important;
+        border-radius: 12px !important;
+        padding: 2rem !important;
+        margin: 1rem 0 !important;
+        border: 1px solid #333333 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
     }
-    
-    /* Input fields */
+
+    /* Input fields - dark theme */
     [data-testid="stTextInput"], [data-testid="stDateInput"] input {
-        background: #ffffff !important;
-        border: 1px solid #dee2e6 !important;
+        background: #333333 !important;
+        border: 1px solid #404040 !important;
         border-radius: 8px !important;
-        padding: 10px !important;
+        color: #ffffff !important;
+        padding: 12px !important;
     }
-    
-    /* Text input focus state */
-    [data-testid="stTextInput"]:focus-within,
-    [data-testid="stDateInput"]:focus-within {
-        border-color: #0d6efd !important;
-        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25) !important;
-    }
-    
-    /* Button styling */
+
+    /* Button styling - consistent size */
     [data-testid="stButton"] button {
-        background: #0d6efd !important;
+        background: #007AFF !important;
         color: white !important;
-        border-radius: 8px !important;
-        padding: 12px 24px !important;
-        transition: all 0.2s ease;
+        border-radius: 10px !important;
+        padding: 14px 28px !important;
+        width: 100% !important;
+        font-size: 16px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    
+
     [data-testid="stButton"] button:hover {
-        background: #0b5ed7 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
+        background: #0063CC !important;
+        transform: scale(1.02) !important;
+        box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2) !important;
     }
-    
-    /* Container styling */
-    [data-testid="stHorizontalBlock"] {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1.5rem;
-        border: 1px solid #e9ecef;
+
+    /* Text colors */
+    h1, h2, h3, h4, h5, h6, .stMarkdown {
+        color: #ffffff !important;
     }
-    
-    /* Headers */
-    h1 {
-        color: #212529 !important;
-        font-weight: 700 !important;
-        margin-bottom: 1rem !important;
-    }
-    
-    h2, h3 {
-        color: #343a40 !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Success/Error messages */
-    [data-testid="stNotification"] {
-        border-radius: 8px !important;
-        border: 1px solid #e9ecef !important;
-    }
-    
+
     /* Progress bar */
     [data-testid="stProgress"] > div > div {
-        background-color: #0d6efd !important;
+        background: #007AFF !important;
     }
-    
+
+    /* Error/Success messages */
+    [data-testid="stNotification"] {
+        background: #2b2b2b !important;
+        border: 1px solid #404040 !important;
+        color: #ffffff !important;
+    }
+
     /* Divider */
     hr {
-        margin: 2rem 0 !important;
-        border-color: #e9ecef !important;
+        border-color: #333333 !important;
+        margin: 1.5rem 0 !important;
     }
+
+    /* Cross-browser fixes */
+    input::-webkit-input-placeholder { color: #888 !important; }
+    input::-moz-placeholder { color: #888 !important; }
+    input:-ms-input-placeholder { color: #888 !important; }
+    input:-moz-placeholder { color: #888 !important; }
     </style>
     """, unsafe_allow_html=True)
+
+# Unified card layout
+with st.container():
+    st.markdown('<div class="dark-card">', unsafe_allow_html=True)
+    
+    # Combined sections
+    st.subheader("📅 Date Range")
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("Start Date")
+    with col2:
+        end_date = st.date_input("End Date")
+    
+    st.markdown("---")
+    
+    st.subheader("👤 Employee Information")
+    emp_col1, emp_col2 = st.columns(2)
+    with emp_col1:
+        employee_id = st.text_input("Employee ID")
+    with emp_col2:
+        full_name = st.text_input("Full Name")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Improved UI Layout
 st.title("🍴 Automated Meal Form Filler")
