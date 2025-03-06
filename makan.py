@@ -26,37 +26,89 @@ def generate_weekdays(start_date, end_date):
 # Custom CSS styling
 st.markdown("""
     <style>
-    .main {
-        background-color: #F5F5F5;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    
+    * {
+        font-family: 'Inter', sans-serif;
     }
+    
+    /* Main background */
+    [data-testid="stAppViewContainer"] {
+        background: #f8f9fa;
+    }
+    
+    /* Sidebar background */
+    [data-testid="stSidebar"] {
+        background: #ffffff;
+    }
+    
+    /* Input fields */
+    [data-testid="stTextInput"], [data-testid="stDateInput"] input {
+        background: #ffffff !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+    }
+    
+    /* Text input focus state */
+    [data-testid="stTextInput"]:focus-within,
+    [data-testid="stDateInput"]:focus-within {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25) !important;
+    }
+    
+    /* Button styling */
+    [data-testid="stButton"] button {
+        background: #0d6efd !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 12px 24px !important;
+        transition: all 0.2s ease;
+    }
+    
+    [data-testid="stButton"] button:hover {
+        background: #0b5ed7 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
+    }
+    
+    /* Container styling */
+    [data-testid="stHorizontalBlock"] {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    /* Headers */
     h1 {
-        color: #2F4F4F;
-        text-align: center;
+        color: #212529 !important;
+        font-weight: 700 !important;
+        margin-bottom: 1rem !important;
     }
-    .stDateInput, .stTextInput {
-        padding: 10px;
-        border-radius: 5px;
+    
+    h2, h3 {
+        color: #343a40 !important;
+        font-weight: 600 !important;
     }
-    .stButton>button {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 24px;
-        border-radius: 5px;
-        border: none;
-        width: 100%;
-        transition: all 0.3s;
+    
+    /* Success/Error messages */
+    [data-testid="stNotification"] {
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
     }
-    .stButton>button:hover {
-        background-color: #45a049;
-        transform: scale(1.05);
+    
+    /* Progress bar */
+    [data-testid="stProgress"] > div > div {
+        background-color: #0d6efd !important;
     }
-    .success {
-        color: #155724;
-        background-color: #d4edda;
-        border-color: #c3e6cb;
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px 0;
+    
+    /* Divider */
+    hr {
+        margin: 2rem 0 !important;
+        border-color: #e9ecef !important;
     }
     </style>
     """, unsafe_allow_html=True)
