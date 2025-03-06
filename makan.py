@@ -10,15 +10,13 @@ from selenium.webdriver.chrome.service import Service
 # Web driver setup function
 def web_driver():
     options = webdriver.ChromeOptions()
-    options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    options.binary_location = "/usr/bin/chromium"  # Updated path
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1200")
-    
-    service = Service(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
-    return webdriver.Chrome(service=service, options=options)
+    return webdriver.Chrome(options=options)
 
 # Function to generate weekday dates
 def generate_weekdays(start_date, end_date):
