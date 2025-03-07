@@ -155,7 +155,7 @@ if st.button('🚀 Submit Forms'):
         
         try:
             driver = web_driver()
-            form_url = "https://docs.google.com/forms/d/e/1FAIpQLSeL0Xd9WjgTgEDUO7zYueNzyctUtFxLG4bgu7Xl_i-YMfv20g/viewform?usp=header"
+            form_url = "https://docs.google.com/forms/d/e/1FAIpQLSfIOpQrzA36KausWa_rOLvMPU2mi9sPq0r5hkpKMiwyBSDIsw/viewform?vc=0&c=0&w=1&flr=0"
             
             total_days = len(weekdays)
             for index, date in enumerate(weekdays):
