@@ -123,8 +123,8 @@ st.markdown('<p class="center-text">🍴 Automatically fill your daily meal form
 
 # First section: Google Form URL
 with st.container():
-    st.subheader("🔗 Put Google Form URL Below!")
-    form_url = st.text_input("Enter the Google Form URL")
+    st.subheader("🔗 Google Form Link")
+    form_url = st.text_input("Enter the Google Form URL Below")
 
 # Second section: Date Range
 with st.container():
