@@ -137,6 +137,10 @@ with st.container():
     with emp_col2:
         full_name = st.text_input("Full Name")
 
+with st.container():
+    st.subheader("🔗 Google Form URL")
+    form_url = st.text_input("Enter the Google Form URL")
+
 st.divider()
 
 if start_date and end_date:
@@ -145,7 +149,7 @@ if start_date and end_date:
         st.warning("No working days found in the selected date range!")
 
 if st.button('🚀 Submit Forms'):
-    if not employee_id or not full_name:
+    if not employee_id or not full_name or not form_url:
         st.error("Please fill in all required fields!")
     else:
         progress_bar = st.progress(0)
@@ -155,7 +159,6 @@ if st.button('🚀 Submit Forms'):
         
         try:
             driver = web_driver()
-            form_url = "https://docs.google.com/forms/d/e/1FAIpQLSfIOpQrzA36KausWa_rOLvMPU2mi9sPq0r5hkpKMiwyBSDIsw/viewform?vc=0&c=0&w=1&flr=0"
             
             total_days = len(weekdays)
             for index, date in enumerate(weekdays):
