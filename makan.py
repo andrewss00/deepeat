@@ -121,6 +121,12 @@ st.markdown("""
 st.markdown('<h1 class="center-text">Automated Meal Form</h1>', unsafe_allow_html=True)
 st.markdown('<p class="center-text">🍴 Automatically fill your daily meal forms!</p>', unsafe_allow_html=True)
 
+# First section: Google Form URL
+with st.container():
+    st.subheader("🔗 Google Form URL")
+    form_url = st.text_input("Enter the Google Form URL")
+
+# Second section: Date Range
 with st.container():
     st.subheader("📅 Date Range")
     col1, col2 = st.columns(2)
@@ -129,6 +135,7 @@ with st.container():
     with col2:
         end_date = st.date_input("End Date")
 
+# Third section: Employee Information
 with st.container():
     st.subheader("👤 Employee Information")
     emp_col1, emp_col2 = st.columns(2)
@@ -136,10 +143,6 @@ with st.container():
         employee_id = st.text_input("Employee ID")
     with emp_col2:
         full_name = st.text_input("Full Name")
-
-with st.container():
-    st.subheader("🔗 Google Form URL")
-    form_url = st.text_input("Enter the Google Form URL")
 
 st.divider()
 
