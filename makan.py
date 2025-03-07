@@ -154,9 +154,7 @@ if start_date and end_date:
 # Validate Employee ID (ensure length is exactly 10 characters)
 if employee_id:
     if len(employee_id) < 10:
-        st.warning("⚠️ Employee ID must be exactly 10 characters. Please enter a valid ID.")
-    elif len(employee_id) > 10:
-        st.warning("⚠️ Employee ID cannot be more than 10 characters. Please enter a valid ID.")
+        st.warning("⚠️ Employee ID must be exactly 10 characters.")
 
 if st.button('🚀 Submit Forms'):
     if not employee_id or not full_name or not form_url:
