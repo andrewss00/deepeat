@@ -123,7 +123,7 @@ st.markdown('<p class="center-text">🍴 Automatically fill your daily meal form
 
 # First section: Google Form URL
 with st.container():
-    st.subheader("🔗 Put Google Form URL Below!")
+    st.subheader("🔗 Google Form URL")
     form_url = st.text_input("Enter the Google Form URL")
 
 # Second section: Date Range
@@ -151,9 +151,12 @@ if start_date and end_date:
     if len(weekdays) == 0:
         st.warning("No working days found in the selected date range!")
 
-# Validate Employee ID (just length check, not numeric)
-if employee_id and len(employee_id) != 10:
-    st.error("⚠️ Employee ID must be exactly 10 characters.")
+# Validate Employee ID (ensure length is exactly 10 characters)
+if employee_id:
+    if len(employee_id) < 10:
+        st.warning("⚠️ Employee ID must be exactly 10 characters. Please enter a valid ID.")
+    elif len(employee_id) > 10:
+        st.warning("⚠️ Employee ID cannot be more than 10 characters. Please enter a valid ID.")
 
 if st.button('🚀 Submit Forms'):
     if not employee_id or not full_name or not form_url:
