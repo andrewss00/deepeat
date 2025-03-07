@@ -159,8 +159,8 @@ if employee_id:
 if st.button('🚀 Submit Forms'):
     if not employee_id or not full_name or not form_url:
         st.error("Please fill in all required fields!")
-    elif len(employee_id) != 10:
-        st.error("⚠️ Employee ID must be exactly 10 characters.")
+    elif len(employee_id) < 10:
+        st.error("⚠️ Employee ID must at least 10 characters.")
     else:
         progress_bar = st.progress(0)
         status_text = st.empty()
