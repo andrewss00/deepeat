@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from datetime import datetime
 import time
 import pandas as pd
-import random  # For the mini game
+import os
 from selenium.webdriver.chrome.service import Service
 
 # Web driver setup function
@@ -144,20 +144,8 @@ with st.container():
     with emp_col2:
         full_name = st.text_input("Full Name")
 
-# Mini Game Section
-st.subheader("🎮 Mini Game: Guess the Number!")
-st.markdown("Guess a number between 1 and 10 to enable form submission.")
-random_number = random.randint(1, 10)
-guess = st.number_input("Enter your guess:", min_value=1, max_value=10, step=1)
-game_won = False
-
-if guess == random_number:
-    game_won = True
-    st.success("🎉 You guessed it! Now you can submit the form!")
-
 st.divider()
 
-# Date validation
 if start_date and end_date:
     weekdays = generate_weekdays(str(start_date), str(end_date))
     if len(weekdays) == 0:
@@ -168,7 +156,7 @@ if employee_id:
     if len(employee_id) < 10:
         st.warning("⚠️ Employee ID must be exactly 10 characters.")
 
-if st.button('🚀 Submit Forms') and game_won:
+if st.button('🚀 Submit Forms'):
     if not employee_id or not full_name or not form_url:
         st.error("Please fill in all required fields!")
     elif len(employee_id) < 10:
