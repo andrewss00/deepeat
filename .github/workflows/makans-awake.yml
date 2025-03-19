@@ -1,0 +1,13 @@
+name: Keep Second Streamlit App Awake
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  keep-awake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send request to Second Streamlit app
+        run: curl -s https://makans.streamlit.app > /dev/null
