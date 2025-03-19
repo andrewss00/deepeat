@@ -1,4 +1,4 @@
-name: Keep Second Streamlit App Awake
+name: Keep Makans Awake
 
 on:
   schedule:
