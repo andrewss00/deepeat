@@ -1,57 +1,68 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+name: Keep Streamlit App Alive
 
-# Configure Chrome options
-options = Options()
-options.add_argument("--headless")  # Run without GUI
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
 
-# Start WebDriver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-try:
-    driver.get("https://makans.streamlit.app/")
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    # Wait for the page to load
-    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+      - name: Install Selenium & Chrome
+        run: |
+          python -m pip install selenium
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
 
-    # Check if app is asleep
-    try:
-        wake_up_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Yes, get this app back up?')]"))
-        )
-        print("App is asleep. Clicking wake-up button...")
-        wake_up_button.click()
+      - name: Run Selenium script
+        run: |
+          python - <<EOF
+          from selenium import webdriver
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.support.ui import WebDriverWait
+          from selenium.webdriver.support import expected_conditions as EC
 
-        # Wait for confirmation
-        WebDriverWait(driver, 40).until(
-            EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'App is running')]"))
-        )
-        print("Successfully woke up the app!")
-
-    except:
-        print("App seems awake. Simulating activity...")
-
-        # Click somewhere on the page
-        body = driver.find_element(By.TAG_NAME, "body")
-        ActionChains(driver).move_to_element(body).click().perform()
-
-        # Scroll down and up
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        driver.execute_script("window.scrollTo(0, 0);")
-
-        print("Activity simulated.")
-
-except Exception as e:
-    print(f"Error: {e}")
-
-finally:
-    driver.quit()
-    print("Browser closed.")
+          options = webdriver.ChromeOptions()
+          options.add_argument("--headless")
+          options.add_argument("--no-sandbox")
+          
+          driver = webdriver.Chrome(options=options)
+          
+          try:
+              driver.get("https://makans.streamlit.app/")
+              
+              # Wait max 30 seconds for elements
+              wait = WebDriverWait(driver, 30)
+              
+              # Check for sleep page
+              try:
+                  button = wait.until(EC.presence_of_element_located(
+                      (By.XPATH, '//button[contains(., "Yes, get this app back up?")]')
+                  ))
+                  print("App asleep - clicking button...")
+                  button.click()
+                  
+                  # Wait for app container to reload
+                  wait.until(EC.presence_of_element_located(
+                      (By.CLASS_NAME, "stApp")
+                  ))
+                  print("App restarted!")
+                  
+              except:
+                  print("App awake - refreshing...")
+                  driver.refresh()
+                  
+          except Exception as e:
+              print(f"Error: {str(e)}")
+          finally:
+              driver.quit()
+          EOF
