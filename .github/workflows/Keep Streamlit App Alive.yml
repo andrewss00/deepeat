@@ -2,8 +2,8 @@ name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Automatic: Every 15 minutes
-  workflow_dispatch:        # Manual: Trigger via GitHub UI
+    - cron: '*/10 * * * *'  # Run every 10 minutes (more frequent)
+  workflow_dispatch:         # Manual trigger
 
 jobs:
   wake-up:
@@ -23,21 +23,32 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
-      - name: Run wake-up script
+      - name: Run wake-up script with retries and delays
         run: |
           python - <<EOF
           from playwright.sync_api import sync_playwright
+          import time
 
           with sync_playwright() as p:
               browser = p.chromium.launch()
               page = browser.new_page()
-              page.goto("https://makans.streamlit.app/")
               
+              # Navigate to the app and wait for load
+              page.goto("https://makans.streamlit.app/", wait_until="networkidle")
+              
+              # Check for sleep mode
               if "This app has gone to sleep" in page.content():
+                  print("App is asleep. Attempting to wake it up...")
                   page.click("text='Yes, get this app back up?'")
-                  print("App woke up successfully!")
+                  
+                  # Wait for restart (up to 30 seconds)
+                  page.wait_for_selector("text='App is running!'", timeout=30000)
+                  print("App restarted successfully!")
               else:
-                  print("App is already awake.")
+                  print("App is already awake. Simulating activity...")
+                  # Refresh the page to simulate user activity
+                  page.reload()
               
+              # Close browser
               browser.close()
           EOF
