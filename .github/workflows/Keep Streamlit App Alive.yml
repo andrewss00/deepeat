@@ -30,7 +30,7 @@ jobs:
         run: |
           python -m pip install selenium webdriver-manager
 
-      - name: Run script with exact XPath
+      - name: Run wake-up script
         run: |
           python - <<EOF
           from selenium import webdriver
@@ -52,22 +52,20 @@ jobs:
 
           try:
               driver.get("https://makans.streamlit.app/")
-              
-              # Debug: Save screenshot
               driver.save_screenshot('debug.png')
               
               wait = WebDriverWait(driver, 20)
               
               try:
-                  # Use exact XPath from your inspection
+                  # Use provided XPath
                   button = wait.until(EC.element_to_be_clickable(
                       (By.XPATH, '//*[@id="root"]/div[1]/div/div/div/div/button')
                   ))
                   print("App asleep - clicking button...")
                   button.click()
                   
-                  # Wait for page reload
-                  time.sleep(10)  # Extra buffer for Streamlit restart
+                  # Wait for restart confirmation
+                  time.sleep(10)  # Extra buffer for Streamlit to restart
                   wait.until(EC.presence_of_element_located(
                       (By.XPATH, '//*[@id="root"]/div[1]/div/div/div')
                   ))
@@ -78,14 +76,14 @@ jobs:
                   driver.refresh()
                   
           except Exception as main_error:
-              print(f"Error: {str(main_error)}")
+              print(f"Critical error: {str(main_error)}")
           finally:
               driver.quit()
           EOF
 
       - name: Upload debug screenshot
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Corrected version
         with:
           name: selenium-debug
           path: debug.png
