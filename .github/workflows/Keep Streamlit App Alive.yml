@@ -46,7 +46,7 @@ jobs:
               # Check for sleep page
               try:
                   button = wait.until(EC.presence_of_element_located(
-                      (By.XPATH, '//button[contains(., "Yes, get this app back up?")]')
+                      (By.XPATH, '//button[contains(., "Yes, get this app back up!")]')
                   ))
                   print("App asleep - clicking button...")
                   button.click()
