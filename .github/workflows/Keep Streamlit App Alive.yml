@@ -17,52 +17,75 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Selenium & Chrome
+      - name: Install Chrome and dependencies
         run: |
-          python -m pip install selenium
           sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
-      - name: Run Selenium script
+      - name: Install Selenium and WebDriver Manager
+        run: |
+          python -m pip install selenium webdriver-manager
+
+      - name: Run Selenium script with proper setup
         run: |
           python - <<EOF
           from selenium import webdriver
           from selenium.webdriver.common.by import By
           from selenium.webdriver.support.ui import WebDriverWait
           from selenium.webdriver.support import expected_conditions as EC
+          from webdriver_manager.chrome import ChromeDriverManager
+          from selenium.webdriver.chrome.service import Service
 
           options = webdriver.ChromeOptions()
           options.add_argument("--headless")
           options.add_argument("--no-sandbox")
-          
-          driver = webdriver.Chrome(options=options)
-          
+          options.add_argument("--disable-dev-shm-usage")
+          options.binary_location = "/usr/bin/google-chrome-stable"
+
+          # Use WebDriver Manager to handle driver versioning
+          service = Service(ChromeDriverManager().install())
+          driver = webdriver.Chrome(service=service, options=options)
+
           try:
               driver.get("https://makans.streamlit.app/")
               
-              # Wait max 30 seconds for elements
-              wait = WebDriverWait(driver, 30)
+              # Debug: Save screenshot
+              driver.save_screenshot('page.png')
               
-              # Check for sleep page
+              wait = WebDriverWait(driver, 20)
+              
               try:
-                  button = wait.until(EC.presence_of_element_located(
+                  # More reliable selector using both tag and text
+                  button = wait.until(EC.element_to_be_clickable(
                       (By.XPATH, '//button[contains(., "Yes, get this app back up!")]')
                   ))
                   print("App asleep - clicking button...")
                   button.click()
                   
-                  # Wait for app container to reload
+                  # Wait for main content to reload
                   wait.until(EC.presence_of_element_located(
-                      (By.CLASS_NAME, "stApp")
+                      (By.CSS_SELECTOR, "[data-testid='stAppViewContainer']")
                   ))
-                  print("App restarted!")
+                  print("App restarted successfully!")
                   
-              except:
-                  print("App awake - refreshing...")
+              except Exception as e:
+                  print(f"No sleep button found: {str(e)}")
+                  print("Refreshing app...")
                   driver.refresh()
                   
-          except Exception as e:
-              print(f"Error: {str(e)}")
+          except Exception as main_error:
+              print(f"Critical error: {str(main_error)}")
           finally:
               driver.quit()
           EOF
+
+      - name: Upload screenshot for debugging
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: selenium-debug
+          path: page.png
