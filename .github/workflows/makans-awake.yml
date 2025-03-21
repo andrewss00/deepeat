@@ -1,18 +1,13 @@
-name: Keep Makans Awake
+name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # Every 5 minutes instead of 6 hours
-  workflow_dispatch:
+    # Runs every 30 minutes (cron syntax)
+    - cron: '*/30 * * * *'
 
 jobs:
-  keep-awake:
+  ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Streamlit app
-        run: |
-          # Use curl with cache-buster and follow redirects
-          curl -L -s "https://makans.streamlit.app/?_=$(date +%s)" \
-          -H "User-Agent: GitHub Actions Keep-Alive" \
-          -H "Cache-Control: no-cache" \
-          -o /dev/null -w "Status: %{http_code}\n"
+      - name: Ping Streamlit App
+        run: curl -sSL "https://makans.streamlit.app/"
