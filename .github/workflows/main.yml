@@ -8,5 +8,13 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Streamlit App (Follow Redirects)
-        run: curl -sSL "https://makans.streamlit.app/"
+      - name: Wake Up Streamlit App
+        run: |
+          # First, get the wake-up page HTML to extract the required token
+          RESPONSE=$(curl -sSL -c cookies.txt "https://makans.streamlit.app/")
+          XSRF_TOKEN=$(echo "$RESPONSE" | grep -oP 'name="_xsrf" value="\K[^"]+')
+
+          # Then, send a POST request to the restart endpoint with the token
+          curl -sSL -b cookies.txt -X POST \
+            -d "_xsrf=$XSRF_TOKEN" \
+            "https://makans.streamlit.app/_restart"
