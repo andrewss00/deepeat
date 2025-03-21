@@ -2,7 +2,7 @@ name: Keep Makans Awake
 
 on:
   schedule:
-    - cron: "0 */6 * * *"  # Every 6 hours at :00 minute mark
+    - cron: "*/5 * * * *"  # Every 5 minutes instead of 6 hours
   workflow_dispatch:
 
 jobs:
@@ -11,9 +11,8 @@ jobs:
     steps:
       - name: Ping Streamlit app
         run: |
+          # Use curl with cache-buster and follow redirects
           curl -L -s "https://makans.streamlit.app/?_=$(date +%s)" \
           -H "User-Agent: GitHub Actions Keep-Alive" \
-          -H "Cache-Control: no-cache, no-store, must-revalidate" \
-          -H "Pragma: no-cache" \
-          -H "Expires: 0" \
-          -o /dev/null -w "Last check: $(date -u)\nResponse: %{http_code}\n"
+          -H "Cache-Control: no-cache" \
+          -o /dev/null -w "Status: %{http_code}\n"
