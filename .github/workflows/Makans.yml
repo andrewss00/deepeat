@@ -1,4 +1,4 @@
-name: Keep MakanStreamlit Alive
+name: Makans
 
 on:
   schedule:
