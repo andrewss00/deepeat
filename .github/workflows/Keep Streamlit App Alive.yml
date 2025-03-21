@@ -2,7 +2,8 @@ name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes (more frequent)
+    - cron: '*/15 * * * *'  # Automatic: Every 15 minutes
+  workflow_dispatch:        # Manual: Trigger via GitHub UI
 
 jobs:
   wake-up:
@@ -30,13 +31,9 @@ jobs:
           with sync_playwright() as p:
               browser = p.chromium.launch()
               page = browser.new_page()
-              
-              # Navigate to the app URL
               page.goto("https://makans.streamlit.app/")
               
-              # Check if the sleep page is shown
               if "This app has gone to sleep" in page.content():
-                  # Click the "Yes" button to wake it up
                   page.click("text='Yes, get this app back up?'")
                   print("App woke up successfully!")
               else:
