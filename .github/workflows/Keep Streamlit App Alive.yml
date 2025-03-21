@@ -1,75 +1,57 @@
-name: Keep Streamlit App Alive
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
-on:
-  schedule:
-    - cron: '*/10 * * * *'  # Every 10 minutes
-  workflow_dispatch:
+# Configure Chrome options
+options = Options()
+options.add_argument("--headless")  # Run without GUI
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
 
-jobs:
-  wake-up:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# Start WebDriver
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+try:
+    driver.get("https://makans.streamlit.app/")
 
-      - name: Install Selenium and Dependencies
-        run: |
-          python -m pip install selenium webdriver-manager
+    # Wait for the page to load
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-      - name: Run wake-up script with Selenium
-        run: |
-          python - <<EOF
-          from selenium import webdriver
-          from selenium.webdriver.chrome.service import Service
-          from selenium.webdriver.chrome.options import Options
-          from selenium.webdriver.common.by import By
-          from selenium.webdriver.common.action_chains import ActionChains
-          from selenium.webdriver.support.ui import WebDriverWait
-          from selenium.webdriver.support import expected_conditions as EC
-          from webdriver_manager.chrome import ChromeDriverManager
+    # Check if app is asleep
+    try:
+        wake_up_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Yes, get this app back up?')]"))
+        )
+        print("App is asleep. Clicking wake-up button...")
+        wake_up_button.click()
 
-          # Configure Chrome options for GitHub Actions
-          options = Options()
-          options.add_argument("--headless")  # Run in headless mode
-          options.add_argument("--no-sandbox")
-          options.add_argument("--disable-dev-shm-usage")
+        # Wait for confirmation
+        WebDriverWait(driver, 40).until(
+            EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'App is running')]"))
+        )
+        print("Successfully woke up the app!")
 
-          # Start WebDriver
-          driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    except:
+        print("App seems awake. Simulating activity...")
 
-          try:
-              driver.get("https://makans.streamlit.app/")
+        # Click somewhere on the page
+        body = driver.find_element(By.TAG_NAME, "body")
+        ActionChains(driver).move_to_element(body).click().perform()
 
-              # Wait for page load
-              WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        # Scroll down and up
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        driver.execute_script("window.scrollTo(0, 0);")
 
-              # Check if the "app is asleep" message appears
-              try:
-                  wake_up_button = WebDriverWait(driver, 10).until(
-                      EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Yes, get this app back up?')]"))
-                  )
-                  print("App is asleep. Clicking wake-up button...")
-                  ActionChains(driver).move_to_element(wake_up_button).click().perform()
-                  
-                  # Wait for confirmation
-                  WebDriverWait(driver, 40).until(
-                      EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'App is running')]"))
-                  )
-                  print("Successfully woke up the app!")
+        print("Activity simulated.")
 
-              except Exception:
-                  print("App seems awake. Refreshing to prevent sleep...")
-                  driver.refresh()
+except Exception as e:
+    print(f"Error: {e}")
 
-          except Exception as e:
-              print(f"Error: {e}")
-
-          finally:
-              driver.quit()
-              print("Browser closed.")
-          EOF
+finally:
+    driver.quit()
+    print("Browser closed.")
