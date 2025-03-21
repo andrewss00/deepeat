@@ -1,8 +1,8 @@
-name: Keep Streamlit App Alive
+name: Keep MakanStreamlit Alive
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs at the start of every hour
+    - cron: '0 * * * *'  # Hourly base schedule
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,19 @@ jobs:
         run: |
           python -m pip install selenium webdriver-manager
 
-      - name: Run hourly wake-up script
+      - name: Generate random delay
+        run: |
+          MIN_DELAY=60  # 1 hour minimum
+          MAX_DELAY=120 # 2 hours maximum
+          RANDOM_DELAY=$(( MIN_DELAY + RANDOM % (MAX_DELAY - MIN_DELAY + 1) ))
+          echo "RANDOM_DELAY_MIN=$RANDOM_DELAY" >> $GITHUB_ENV
+          echo "⏱ Next check in $RANDOM_DELAY minutes"
+
+      - name: Sleep random interval
+        run: |
+          sleep $(( $RANDOM_DELAY_MIN * 60 ))
+
+      - name: Run randomized wake-up script
         run: |
           python - <<EOF
           from selenium import webdriver
@@ -40,6 +52,11 @@ jobs:
           from webdriver_manager.chrome import ChromeDriverManager
           from selenium.webdriver.chrome.service import Service
           import time
+          import random
+
+          # Configuration
+          APP_URL = "https://makans.streamlit.app"
+          WAKE_BUTTON_XPATH = '//*[@id="root"]/div[1]/div/div/div/div/button'
 
           options = webdriver.ChromeOptions()
           options.add_argument("--headless")
@@ -51,27 +68,27 @@ jobs:
           driver = webdriver.Chrome(service=service, options=options)
 
           try:
-              # First: Check for sleep state
-              driver.get("https://makans.streamlit.app/")
+              # Random interaction sequence
+              driver.get(f"{APP_URL}?r={random.randint(1,1000)}")
               
+              # Check sleep state with random wait
               try:
-                  button = WebDriverWait(driver, 15).until(
-                      EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div[1]/div/div/div/div/button'))
-                  )
-                  print("🔄 App asleep - waking up...")
-                  button.click()
-                  time.sleep(15)  # Wait for restart
+                  WebDriverWait(driver, random.uniform(15, 25)).until(
+                      EC.presence_of_element_located((By.XPATH, WAKE_BUTTON_XPATH))
+                  ).click()
+                  print("🔔 Woke sleeping app")
+                  time.sleep(random.uniform(10, 15))
               except:
-                  print("✅ App already awake")
+                  print("🌞 App already awake")
 
-              # Second: Reset inactivity timer
-              print("♻️ Simulating user activity...")
-              driver.refresh()
-              time.sleep(5)
-              
-              # Third: Additional activity (optional)
-              driver.find_element(By.TAG_NAME, 'body').send_keys(webdriver.Keys.ESCAPE)
-              print("🎯 Simulated keyboard interaction")
+              # Random activity pattern
+              activity = random.choice([
+                  ("refresh", lambda: driver.refresh()),
+                  ("scroll", lambda: driver.execute_script(f"window.scrollBy(0, {random.randint(200,800)})")),
+                  ("keypress", lambda: driver.find_element(By.TAG_NAME, 'body').send_keys(webdriver.Keys.ESCAPE))
+              ])
+              activity[1]()
+              print(f"🔄 Performed {activity[0]} activity")
 
           except Exception as e:
               print(f"🚨 Error: {str(e)}")
@@ -79,9 +96,9 @@ jobs:
               driver.quit()
           EOF
 
-      - name: Upload debug screenshot
+      - name: Upload debug artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: selenium-debug
+          name: makan-debug
           path: debug.png
