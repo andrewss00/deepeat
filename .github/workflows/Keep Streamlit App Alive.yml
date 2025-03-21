@@ -17,51 +17,50 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Playwright and dependencies
+      - name: Install Playwright
         run: |
           python -m pip install playwright
           playwright install chromium
-          playwright install-deps chromium
 
-      - name: Run wake-up script with improved handling
+      - name: Run wake-up script
         run: |
           python - <<EOF
           from playwright.sync_api import sync_playwright
-          import time
 
           with sync_playwright() as p:
-              browser = p.chromium.launch()
+              browser = p.chromium.launch(headless=True)
               page = browser.new_page()
               
-              # Add timeout configuration
-              page.set_default_timeout(60000)  # 60 seconds timeout
-              
               try:
-                  # Navigate with longer wait
-                  page.goto("https://makans.streamlit.app/", wait_until="domcontentloaded")
+                  # Navigate to app
+                  page.goto("https://makans.streamlit.app/", wait_until="networkidle")
                   
-                  # Wait specifically for either awake or sleep state
-                  try:
-                      # Check if sleep page appears within 20 seconds
-                      page.wait_for_selector("text='This app has gone to sleep'", timeout=20000)
+                  # Debug: Save screenshot for inspection
+                  page.screenshot(path="debug.png")
+                  
+                  # Check for sleep page using XPath
+                  sleep_element = page.query_selector('//button[contains(., "Yes, get this app back up?")]')
+                  
+                  if sleep_element:
+                      print("App is asleep. Clicking button...")
+                      sleep_element.click()
                       
-                      # More reliable button selector
-                      print("App is asleep. Clicking wake button...")
-                      page.click("button:has-text('Yes, get this app back up?')")
-                      
-                      # Wait for confirmation of wake-up
-                      page.wait_for_selector("text='App is running'", timeout=40000)
-                      print("Successfully woke up the app!")
-                      
-                  except Exception as sleep_error:
-                      # If no sleep page found, refresh to reset timer
-                      print("App seems awake. Refreshing to prevent sleep...")
+                      # Wait for app to restart (longer timeout)
+                      page.wait_for_selector('//div[@class="stApp"]', timeout=60000)
+                      print("App restarted!")
+                  else:
+                      print("App is awake. Refreshing...")
                       page.reload()
                       
-              except Exception as main_error:
-                  print(f"Error: {main_error}")
-                  
+              except Exception as e:
+                  print(f"Error: {str(e)}")
               finally:
                   browser.close()
-                  print("Browser closed.")
           EOF
+
+      - name: Upload debug screenshot
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-debug
+          path: debug.png
