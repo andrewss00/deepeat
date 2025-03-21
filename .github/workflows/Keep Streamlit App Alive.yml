@@ -2,8 +2,8 @@ name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Run every 10 minutes (more frequent)
-  workflow_dispatch:         # Manual trigger
+    - cron: '*/10 * * * *'  # Every 10 minutes
+  workflow_dispatch:
 
 jobs:
   wake-up:
@@ -23,7 +23,7 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
-      - name: Run wake-up script with retries and delays
+      - name: Run wake-up script with improved handling
         run: |
           python - <<EOF
           from playwright.sync_api import sync_playwright
@@ -33,22 +33,35 @@ jobs:
               browser = p.chromium.launch()
               page = browser.new_page()
               
-              # Navigate to the app and wait for load
-              page.goto("https://makans.streamlit.app/", wait_until="networkidle")
+              # Add timeout configuration
+              page.set_default_timeout(60000)  # 60 seconds timeout
               
-              # Check for sleep mode
-              if "This app has gone to sleep" in page.content():
-                  print("App is asleep. Attempting to wake it up...")
-                  page.click("text='Yes, get this app back up?'")
+              try:
+                  # Navigate with longer wait
+                  page.goto("https://makans.streamlit.app/", wait_until="domcontentloaded")
                   
-                  # Wait for restart (up to 30 seconds)
-                  page.wait_for_selector("text='App is running!'", timeout=30000)
-                  print("App restarted successfully!")
-              else:
-                  print("App is already awake. Simulating activity...")
-                  # Refresh the page to simulate user activity
-                  page.reload()
-              
-              # Close browser
-              browser.close()
+                  # Wait specifically for either awake or sleep state
+                  try:
+                      # Check if sleep page appears within 20 seconds
+                      page.wait_for_selector("text='This app has gone to sleep'", timeout=20000)
+                      
+                      # More reliable button selector
+                      print("App is asleep. Clicking wake button...")
+                      page.click("button:has-text('Yes, get this app back up?')")
+                      
+                      # Wait for confirmation of wake-up
+                      page.wait_for_selector("text='App is running'", timeout=40000)
+                      print("Successfully woke up the app!")
+                      
+                  except Exception as sleep_error:
+                      # If no sleep page found, refresh to reset timer
+                      print("App seems awake. Refreshing to prevent sleep...")
+                      page.reload()
+                      
+              except Exception as main_error:
+                  print(f"Error: {main_error}")
+                  
+              finally:
+                  browser.close()
+                  print("Browser closed.")
           EOF
