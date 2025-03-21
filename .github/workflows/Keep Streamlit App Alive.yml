@@ -17,50 +17,59 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Playwright
+      - name: Install Selenium and Dependencies
         run: |
-          python -m pip install playwright
-          playwright install chromium
+          python -m pip install selenium webdriver-manager
 
-      - name: Run wake-up script
+      - name: Run wake-up script with Selenium
         run: |
           python - <<EOF
-          from playwright.sync_api import sync_playwright
+          from selenium import webdriver
+          from selenium.webdriver.chrome.service import Service
+          from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.common.action_chains import ActionChains
+          from selenium.webdriver.support.ui import WebDriverWait
+          from selenium.webdriver.support import expected_conditions as EC
+          from webdriver_manager.chrome import ChromeDriverManager
 
-          with sync_playwright() as p:
-              browser = p.chromium.launch(headless=True)
-              page = browser.new_page()
-              
+          # Configure Chrome options for GitHub Actions
+          options = Options()
+          options.add_argument("--headless")  # Run in headless mode
+          options.add_argument("--no-sandbox")
+          options.add_argument("--disable-dev-shm-usage")
+
+          # Start WebDriver
+          driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+          try:
+              driver.get("https://makans.streamlit.app/")
+
+              # Wait for page load
+              WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
+              # Check if the "app is asleep" message appears
               try:
-                  # Navigate to app
-                  page.goto("https://makans.streamlit.app/", wait_until="networkidle")
+                  wake_up_button = WebDriverWait(driver, 10).until(
+                      EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Yes, get this app back up?')]"))
+                  )
+                  print("App is asleep. Clicking wake-up button...")
+                  ActionChains(driver).move_to_element(wake_up_button).click().perform()
                   
-                  # Debug: Save screenshot for inspection
-                  page.screenshot(path="debug.png")
-                  
-                  # Check for sleep page using XPath
-                  sleep_element = page.query_selector('//button[contains(., "Yes, get this app back up?")]')
-                  
-                  if sleep_element:
-                      print("App is asleep. Clicking button...")
-                      sleep_element.click()
-                      
-                      # Wait for app to restart (longer timeout)
-                      page.wait_for_selector('//div[@class="stApp"]', timeout=60000)
-                      print("App restarted!")
-                  else:
-                      print("App is awake. Refreshing...")
-                      page.reload()
-                      
-              except Exception as e:
-                  print(f"Error: {str(e)}")
-              finally:
-                  browser.close()
-          EOF
+                  # Wait for confirmation
+                  WebDriverWait(driver, 40).until(
+                      EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'App is running')]"))
+                  )
+                  print("Successfully woke up the app!")
 
-      - name: Upload debug screenshot
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: playwright-debug
-          path: debug.png
+              except Exception:
+                  print("App seems awake. Refreshing to prevent sleep...")
+                  driver.refresh()
+
+          except Exception as e:
+              print(f"Error: {e}")
+
+          finally:
+              driver.quit()
+              print("Browser closed.")
+          EOF
