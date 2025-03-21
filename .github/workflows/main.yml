@@ -2,19 +2,45 @@ name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every 30 minutes
+    - cron: '*/15 * * * *'  # Every 15 minutes (more frequent)
 
 jobs:
-  ping:
+  wake-up:
     runs-on: ubuntu-latest
     steps:
-      - name: Wake Up Streamlit App
-        run: |
-          # First, get the wake-up page HTML to extract the required token
-          RESPONSE=$(curl -sSL -c cookies.txt "https://makans.streamlit.app/")
-          XSRF_TOKEN=$(echo "$RESPONSE" | grep -oP 'name="_xsrf" value="\K[^"]+')
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-          # Then, send a POST request to the restart endpoint with the token
-          curl -sSL -b cookies.txt -X POST \
-            -d "_xsrf=$XSRF_TOKEN" \
-            "https://makans.streamlit.app/_restart"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Playwright and dependencies
+        run: |
+          python -m pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run wake-up script
+        run: |
+          python - <<EOF
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              page = browser.new_page()
+              
+              # Navigate to the app URL
+              page.goto("https://makans.streamlit.app/")
+              
+              # Check if the sleep page is shown
+              if "This app has gone to sleep" in page.content():
+                  # Click the "Yes" button to wake it up
+                  page.click("text='Yes, get this app back up?'")
+                  print("App woke up successfully!")
+              else:
+                  print("App is already awake.")
+              
+              browser.close()
+          EOF
