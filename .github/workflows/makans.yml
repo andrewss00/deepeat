@@ -1,0 +1,13 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    # Runs every 30 minutes (cron syntax)
+    - cron: '*/30 * * * *'
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit App
+        run: curl -sSL "https://makans.streamlit.app/"
