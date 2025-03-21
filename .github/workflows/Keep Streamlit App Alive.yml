@@ -2,7 +2,7 @@ name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/10 * * * *'  # Every 10 minutes
   workflow_dispatch:
 
 jobs:
@@ -26,11 +26,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-      - name: Install Selenium and WebDriver Manager
+      - name: Install Selenium
         run: |
           python -m pip install selenium webdriver-manager
 
-      - name: Run Selenium script with proper setup
+      - name: Run script with exact XPath
         run: |
           python - <<EOF
           from selenium import webdriver
@@ -39,6 +39,7 @@ jobs:
           from selenium.webdriver.support import expected_conditions as EC
           from webdriver_manager.chrome import ChromeDriverManager
           from selenium.webdriver.chrome.service import Service
+          import time
 
           options = webdriver.ChromeOptions()
           options.add_argument("--headless")
@@ -46,7 +47,6 @@ jobs:
           options.add_argument("--disable-dev-shm-usage")
           options.binary_location = "/usr/bin/google-chrome-stable"
 
-          # Use WebDriver Manager to handle driver versioning
           service = Service(ChromeDriverManager().install())
           driver = webdriver.Chrome(service=service, options=options)
 
@@ -54,38 +54,38 @@ jobs:
               driver.get("https://makans.streamlit.app/")
               
               # Debug: Save screenshot
-              driver.save_screenshot('page.png')
+              driver.save_screenshot('debug.png')
               
               wait = WebDriverWait(driver, 20)
               
               try:
-                  # More reliable selector using both tag and text
+                  # Use exact XPath from your inspection
                   button = wait.until(EC.element_to_be_clickable(
-                      (By.XPATH, '//button[contains(., "Yes, get this app back up!")]')
+                      (By.XPATH, '//*[@id="root"]/div[1]/div/div/div/div/button')
                   ))
                   print("App asleep - clicking button...")
                   button.click()
                   
-                  # Wait for main content to reload
+                  # Wait for page reload
+                  time.sleep(10)  # Extra buffer for Streamlit restart
                   wait.until(EC.presence_of_element_located(
-                      (By.CSS_SELECTOR, "[data-testid='stAppViewContainer']")
+                      (By.XPATH, '//*[@id="root"]/div[1]/div/div/div')
                   ))
                   print("App restarted successfully!")
                   
               except Exception as e:
-                  print(f"No sleep button found: {str(e)}")
-                  print("Refreshing app...")
+                  print("App awake - refreshing...")
                   driver.refresh()
                   
           except Exception as main_error:
-              print(f"Critical error: {str(main_error)}")
+              print(f"Error: {str(main_error)}")
           finally:
               driver.quit()
           EOF
 
-      - name: Upload screenshot for debugging
+      - name: Upload debug screenshot
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: selenium-debug
-          path: page.png
+          path: debug.png
