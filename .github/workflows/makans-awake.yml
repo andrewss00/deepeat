@@ -2,15 +2,18 @@ name: Keep Makans Awake
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *"  # Every 6 hours at :00 minute mark
   workflow_dispatch:
 
 jobs:
   keep-awake:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: sudo apt update && sudo apt install -y chromium-browser
-
-      - name: Send request using Chromium
-        run: chromium-browser --headless --disable-gpu --no-sandbox --remote-debugging-port=9222 https://makans.streamlit.app
+      - name: Ping Streamlit app
+        run: |
+          curl -L -s "https://makans.streamlit.app/?_=$(date +%s)" \
+          -H "User-Agent: GitHub Actions Keep-Alive" \
+          -H "Cache-Control: no-cache, no-store, must-revalidate" \
+          -H "Pragma: no-cache" \
+          -H "Expires: 0" \
+          -o /dev/null -w "Last check: $(date -u)\nResponse: %{http_code}\n"
